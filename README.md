@@ -36,7 +36,9 @@ python fastq_generator.py [OPTIONS]
 ## Example
 See the other example in the examples folder. Permissions are needed to run the scripts (chmod u+x).
 ```bash
+
 python fastq_generator.py --output_file output.fastq --template_sequence template.fasta --with_parameters --upstream_sequence GCCGGCCATGGCG --left_margin 15 --total_length 500 --number_of_sequences 10 --center 150 --min_val 40 --max_val 73 --std_dev 75 --noise_level 0.1
+
 ```
   
 ## References
