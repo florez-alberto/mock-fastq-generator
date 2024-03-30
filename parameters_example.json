@@ -1,0 +1,12 @@
+{
+    "upstream_sequence":"GCCGGCCATGGCG",
+    "left_margin": 110,
+    "total_length": 500,
+    "number_of_sequences": 10,
+    "center": 150,
+    "min_val": 40,
+    "max_val": 73,
+    "std_dev": 75,
+    "noise_level": 0.1
+
+}
