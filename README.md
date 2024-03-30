@@ -2,7 +2,7 @@
 
 This script generates a FastQ file with mock sequences assembled from a template sequence and an upstream sequence. It will need a fasta file with the target sequence. It can be used with the parameres set up as commands or pointing to a parameters.json file as shown in the examples scripts. It will output a fastq looking file with phred scores attached. 
   
-The chosen template sequence comes from a RSV fusion inhibitor peptide derived HR2 497-516[^1]. The function that generates the phred scores will generate a smoothed noisy curve based on a center of maximal phred score using the ASCII 33-126 offset[^2]. 
+The chosen template sequence comes from a RSV fusion inhibitor peptide derived from a 20 amino acid segment from HR2 (positions 497-516)[^1]. The function that generates the phred scores will create a smoothed noisy curve based on a center of maximal phred score using the ASCII 33-126 offset[^2]. 
   
 ![figure_1](./img/smooth_curve_example.png)
 
