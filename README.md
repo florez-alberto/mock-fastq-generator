@@ -7,7 +7,7 @@ The chosen template sequence comes from an RSV fusion inhibitor peptide derived 
   
 ![figure_1](./img/smooth_curve_example.png)
 
-*Figure 1: Smooth noisy phred score of a sample sequence. On a sample sequence with 500 bases, the value in the Y axis represents the phred score and the X axis is the position of the sequence (Index). The phred scores outside of the theresholds were clipped and substituted for their limit values.*
+*Figure 1: Smooth noisy Phred scores of a sample sequence with 500 bases. The value on the Y-axis represents the Phred score, and the X-axis denotes the position of the sequence (Index). Phred scores outside of the thresholds were clipped and substituted with their limit values.*
   
 ## Usage
   
