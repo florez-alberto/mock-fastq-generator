@@ -1,0 +1,47 @@
+[build-system]
+requires = ["setuptools >= 68.0", "setuptools-scm"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "mock-fastq-generator"
+version = "2.0.0"
+description = "A lightweight Python utility for targeted synthetic FASTQ generation with parametric quality decay modeling"
+readme = "README.md"
+license = {text = "MIT"}
+requires-python = ">= 3.8"
+authors = [
+    {name = "Alberto Florez", email = "alberto.florez-prada@cnrs.fr"},
+]
+keywords = ["bioinformatics", "fastq", "sequencing", "simulation", "synthetic-data"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Scientific/Engineering :: Bio-Informatics",
+]
+dependencies = [
+    "numpy >= 1.20",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest >= 7.0",
+    "ruff >= 0.4",
+]
+
+[project.scripts]
+mock-fastq-generator = "mock_fastq_generator.cli:main"
+
+[project.urls]
+Homepage = "https://github.com/florez-alberto/mock-fastq-generator"
+Repository = "https://github.com/florez-alberto/mock-fastq-generator"
+Issues = "https://github.com/florez-alberto/mock-fastq-generator/issues"
+
+[tool.setuptools.packages.find]
+where = ["src"]
