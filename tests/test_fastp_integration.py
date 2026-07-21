@@ -1,4 +1,5 @@
 """Integration tests verifying generated FASTQ compatibility with third-party tools."""
+
 from __future__ import annotations
 
 import json
@@ -13,8 +14,7 @@ from mock_fastq_generator.io import write_fastq
 
 # Skip the entire module if fastp is not installed
 pytestmark = pytest.mark.skipif(
-    shutil.which("fastp") is None,
-    reason="fastp is not installed on the system PATH"
+    shutil.which("fastp") is None, reason="fastp is not installed on the system PATH"
 )
 
 TEMPLATE = "GAAAAAATTAACCAGAGCCTGG"
@@ -45,10 +45,13 @@ class TestFastpIntegration:
         # 2. Run fastp via subprocess
         cmd = [
             "fastp",
-            "-i", str(fastq_path),
-            "-j", str(json_report_path),
-            "-h", str(html_report_path),
-            "-Q"  # Disable quality reporting to stdout to reduce noise
+            "-i",
+            str(fastq_path),
+            "-j",
+            str(json_report_path),
+            "-h",
+            str(html_report_path),
+            "-Q",  # Disable quality reporting to stdout to reduce noise
         ]
 
         # Run fastp and capture output (fastp writes logs to stderr)
@@ -90,12 +93,7 @@ class TestFastpIntegration:
 
         json_report_path = tmp_path / "fastp.json"
 
-        cmd = [
-            "fastp",
-            "-i", str(fastq_path),
-            "-j", str(json_report_path),
-            "-Q"
-        ]
+        cmd = ["fastp", "-i", str(fastq_path), "-j", str(json_report_path), "-Q"]
 
         result = subprocess.run(cmd, capture_output=True, text=True)
         assert result.returncode == 0

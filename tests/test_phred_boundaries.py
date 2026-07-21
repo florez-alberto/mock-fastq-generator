@@ -38,9 +38,7 @@ class TestPhredBoundaries:
             noise_level=0.1,
         )
         scores = [ord(ch) for ch in quality]
-        assert all(
-            min_val <= s <= max_val for s in scores
-        ), (
+        assert all(min_val <= s <= max_val for s in scores), (
             f"Found out-of-range ASCII codes: "
             f"{[s for s in scores if not (min_val <= s <= max_val)]}"
         )
