@@ -51,7 +51,6 @@ class TestFastpIntegration:
             str(json_report_path),
             "-h",
             str(html_report_path),
-            "-Q",  # Disable quality reporting to stdout to reduce noise
         ]
 
         # Run fastp and capture output (fastp writes logs to stderr)
