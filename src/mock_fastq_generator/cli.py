@@ -271,9 +271,9 @@ def main(args: argparse.Namespace | None = None) -> None:
             ext = ".fastq.gz" if parsed_args.gzip else ".fastq"
             out_prefix = parsed_args.output_file
             if out_prefix.endswith(".fastq"):
-                out_prefix = out_prefix[: -len(".fastq")]
+                out_prefix = out_prefix[:-len(".fastq")]
             elif out_prefix.endswith(".fq"):
-                out_prefix = out_prefix[: -len(".fq")]
+                out_prefix = out_prefix[:-len(".fq")]
 
             write_fastq(f"{out_prefix}_R1{ext}", r1_records, compress=parsed_args.gzip)
             write_fastq(f"{out_prefix}_R2{ext}", r2_records, compress=parsed_args.gzip)
