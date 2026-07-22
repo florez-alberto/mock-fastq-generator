@@ -55,7 +55,7 @@ def generate_phred_scores(
     x = np.linspace(0, num_points - 1, num_points)
 
     noise = np.random.normal(0, noise_level, num_points)
-    
+
     if decay_model == "exponential":
         curve = (max_val - min_val) * np.exp(-decay_rate * (x**1.25)) + min_val
         smooth_noisy_curve = curve + noise
@@ -201,16 +201,16 @@ def assemble_sequences(
 
         header = generate_read_header()
         phred_string = generate_phred_scores(
-            sequence, 
-            center, 
-            min_val, 
-            max_val, 
-            std_dev, 
+            sequence,
+            center,
+            min_val,
+            max_val,
+            std_dev,
             noise_level=noise_level,
             decay_model=decay_model,
             decay_rate=decay_rate,
             binned_quality=binned_quality,
-            homopolymer_penalty=homopolymer_penalty
+            homopolymer_penalty=homopolymer_penalty,
         )
         assembled_sequences.append([header, sequence, "+", phred_string])
 
@@ -282,32 +282,32 @@ def assemble_paired_sequences(
 
         # R1 — forward
         phred_r1 = generate_phred_scores(
-            sequence, 
-            center, 
-            min_val, 
-            max_val, 
-            std_dev, 
+            sequence,
+            center,
+            min_val,
+            max_val,
+            std_dev,
             noise_level=noise_level,
             decay_model=decay_model,
             decay_rate=decay_rate,
             binned_quality=binned_quality,
-            homopolymer_penalty=homopolymer_penalty
+            homopolymer_penalty=homopolymer_penalty,
         )
         r1_records.append([header + "/1", sequence, "+", phred_r1])
 
         # R2 — reverse complement
         r2_sequence = reverse_complement(sequence)
         phred_r2 = generate_phred_scores(
-            r2_sequence, 
-            center, 
-            min_val, 
-            max_val, 
-            std_dev, 
+            r2_sequence,
+            center,
+            min_val,
+            max_val,
+            std_dev,
             noise_level=noise_level,
             decay_model=decay_model,
             decay_rate=decay_rate,
             binned_quality=binned_quality,
-            homopolymer_penalty=homopolymer_penalty
+            homopolymer_penalty=homopolymer_penalty,
         )
         r2_records.append([header + "/2", r2_sequence, "+", phred_r2])
 

@@ -106,7 +106,10 @@ def build_parser() -> argparse.ArgumentParser:
         type=str,
         choices=["ascii", "phred"],
         default="ascii",
-        help="How to interpret min_val and max_val inputs (raw ASCII vs Absolute Phred).",
+        help=(
+            "How to interpret min_val and max_val inputs "
+            "(raw ASCII vs Absolute Phred)."
+        ),
     )
 
     parser.add_argument(
@@ -120,19 +123,28 @@ def build_parser() -> argparse.ArgumentParser:
         "--decay_rate",
         type=float,
         default=0.0008,
-        help="Steepness of the dropoff. Only applies to Exponential and Sigmoidal models.",
+        help=(
+            "Steepness of the dropoff. "
+            "Only applies to Exponential and Sigmoidal models."
+        ),
     )
     parser.add_argument(
         "--binned_quality",
         action="store_true",
         default=False,
-        help="Snap quality scores to discrete platform bins (2, 12, 23, 37) like modern Illumina sequencers.",
+        help=(
+            "Snap quality scores to discrete platform bins (2, 12, 23, 37) "
+            "like modern Illumina sequencers."
+        ),
     )
     parser.add_argument(
         "--homopolymer_penalty",
         action="store_true",
         default=False,
-        help="Penalize Phred scores inside runs of >4 identical bases to simulate sequencer alignment struggles.",
+        help=(
+            "Penalize Phred scores inside runs of >4 identical bases "
+            "to simulate sequencer alignment struggles."
+        ),
     )
 
     # --- Output mode ---
