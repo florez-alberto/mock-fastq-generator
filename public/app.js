@@ -89,26 +89,45 @@ document.addEventListener("DOMContentLoaded", () => {
         }, 50);
     });
 
+    // Live updates on form input changes
+    form.addEventListener("input", () => {
+        updatePreview();
+    });
+
     const decayModelSelect = document.getElementById("decayModel");
+    const decayRateGroup = document.getElementById("decayRateGroup");
     const decayRateInput = document.getElementById("decayRate");
-    const stdDevInput = document.getElementById("stdDev");
+    const decayRateLabel = document.getElementById("decayRateLabel");
+    const centerGroup = document.getElementById("centerGroup");
     const centerInput = document.getElementById("center");
+    const centerLabel = document.getElementById("centerLabel");
+    const stdDevGroup = document.getElementById("stdDevGroup");
 
     decayModelSelect.addEventListener("change", () => {
         const model = decayModelSelect.value;
         if (model === "exponential") {
-            decayRateInput.parentElement.style.display = "block";
-            stdDevInput.parentElement.style.display = "none";
-            centerInput.parentElement.style.display = "block";
+            decayRateGroup.style.display = "block";
+            stdDevGroup.style.display = "none";
+            centerGroup.style.display = "none"; // Exponential model does not use center (C)
+            decayRateLabel.innerHTML = 'Decay Rate (λ) <span class="info-icon" title="Exponential decay rate. Sub-exponential initial plateau via x^1.25.">ℹ️</span>';
+            if (decayRateInput.value === "1" || decayRateInput.value === "1.0") {
+                decayRateInput.value = "0.0008";
+            }
         } else if (model === "sigmoidal") {
-            decayRateInput.parentElement.style.display = "block";
-            stdDevInput.parentElement.style.display = "none";
-            centerInput.parentElement.style.display = "block";
+            decayRateGroup.style.display = "block";
+            stdDevGroup.style.display = "none";
+            centerGroup.style.display = "block";
+            decayRateLabel.innerHTML = 'Drop Steepness (k) <span class="info-icon" title="Sigmoidal drop steepness. Higher values create sharp step-function drops (e.g. k=1.0).">ℹ️</span>';
+            centerLabel.innerHTML = 'Drop Position (C) <span class="info-icon" title="Nucleotide coordinate where quality drops to the midpoint.">ℹ️</span>';
+            if (decayRateInput.value === "0.0008") {
+                decayRateInput.value = "1.0";
+            }
         } else {
             // gaussian
-            decayRateInput.parentElement.style.display = "none";
-            stdDevInput.parentElement.style.display = "block";
-            centerInput.parentElement.style.display = "block";
+            decayRateGroup.style.display = "none";
+            stdDevGroup.style.display = "block";
+            centerGroup.style.display = "block";
+            centerLabel.innerHTML = 'Peak Center (C) <span class="info-icon" title="Base position where read quality is highest.">ℹ️</span>';
         }
         updatePreview();
     });

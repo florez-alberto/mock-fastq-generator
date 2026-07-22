@@ -63,20 +63,20 @@
                                 <option value="sigmoidal">Sigmoidal Drop</option>
                             </select>
                         </div>
-                        <div class="form-group">
-                            <label for="decayRate">Decay Rate (λ / k) <span class="info-icon" title="Steepness of the dropoff. Only applies to Exponential and Sigmoidal models.">ℹ️</span></label>
-                            <input type="number" step="0.0001" id="decayRate" value="0.0008">
+                        <div class="form-group" id="decayRateGroup">
+                            <label for="decayRate" id="decayRateLabel">Decay Rate (k / λ) <span class="info-icon" id="decayRateInfo" title="Steepness of the quality dropoff.">ℹ️</span></label>
+                            <input type="number" step="any" id="decayRate" value="0.0008">
                         </div>
                     </div>
 
                     <div class="form-row">
-                        <div class="form-group">
-                            <label for="center">Peak Center (Index) <span class="info-icon" title="The base position where read quality is highest before decaying.">ℹ️</span></label>
-                            <input type="number" id="center" value="100">
+                        <div class="form-group" id="centerGroup">
+                            <label for="center" id="centerLabel">Center Position (C) <span class="info-icon" id="centerInfo" title="Nucleotide coordinate for the quality peak (Gaussian) or drop inflection point (Sigmoidal).">ℹ️</span></label>
+                            <input type="number" step="any" id="center" value="100">
                         </div>
-                        <div class="form-group">
-                            <label for="stdDev">Standard Deviation <span class="info-icon" title="Controls how fast the quality degrades away from the peak center.">ℹ️</span></label>
-                            <input type="number" id="stdDev" value="300">
+                        <div class="form-group" id="stdDevGroup">
+                            <label for="stdDev">Standard Deviation (σ) <span class="info-icon" title="Controls how fast the quality degrades away from the peak center.">ℹ️</span></label>
+                            <input type="number" step="any" id="stdDev" value="300">
                         </div>
                     </div>
 

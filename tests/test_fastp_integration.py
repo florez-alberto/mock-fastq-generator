@@ -104,3 +104,50 @@ class TestFastpIntegration:
         assert passed_reads == 100, (
             f"fastp surprisingly filtered {100 - passed_reads} high-quality reads"
         )
+
+    def test_fastp_sigmoidal_trimming(self, tmp_path: Path) -> None:
+        """fastp sliding-window trimming truncates sigmoidal drop reads at ~100 bp."""
+        records = assemble_sequences(
+            template_sequence=TEMPLATE,
+            total_length=150,
+            number_of_sequences=100,
+            decay_model="sigmoidal",
+            decay_rate=1.0,
+            center=100,
+            min_val=38,  # Phred 5
+            max_val=73,  # Phred 40
+            noise_level=0.5,
+        )
+
+        fastq_path = tmp_path / "sigmoidal.fastq"
+        write_fastq(str(fastq_path), records)
+
+        json_report_path = tmp_path / "fastp.json"
+        trimmed_path = tmp_path / "trimmed.fastq"
+
+        cmd = [
+            "fastp",
+            "-i",
+            str(fastq_path),
+            "-o",
+            str(trimmed_path),
+            "-j",
+            str(json_report_path),
+            "--cut_tail",
+            "--cut_tail_window_size",
+            "4",
+            "--cut_tail_mean_quality",
+            "15",
+            "-Q",
+        ]
+
+        result = subprocess.run(cmd, capture_output=True, text=True)
+        assert result.returncode == 0, f"fastp failed: {result.stderr}"
+
+        report = json.loads(json_report_path.read_text())
+        after_mean_len = report["summary"]["after_filtering"]["read1_mean_length"]
+
+        # Mean trimmed length should be within 100 +/- 1 bp
+        assert 99.0 <= after_mean_len <= 101.0, (
+            f"Expected mean trimmed length ~100 bp, got {after_mean_len}"
+        )
