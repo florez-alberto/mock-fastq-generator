@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>mock-fastq-generator</title>
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&family=JetBrains+Mono&display=swap" rel="stylesheet">
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="app-container">
+        <header>
+            <div class="logo">
+                <h1>mock-fastq-generator</h1>
+                <p>Synthetic FASTQ sequence generation with parametric quality decay modeling</p>
+            </div>
+        </header>
+
+        <main class="dashboard">
+            <!-- Left Panel: Settings -->
+            <section class="panel settings-panel glass">
+                <h2>Parameters</h2>
+                <form id="configForm">
+                    <div class="form-group">
+                        <label for="templateSequence">Template Sequence (FASTA format) <span class="info-icon" title="The core DNA sequence you want to simulate reads for.">ℹ️</span></label>
+                        <textarea id="templateSequence" rows="3">gaaaaaattaaccagagcctggcgtttattcgcaaaagcgatgaactgctgcataacgtg</textarea>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="upstreamSequence">Upstream Sequence <span class="info-icon" title="Sequence prepended to the template (e.g., adapters, restriction sites).">ℹ️</span></label>
+                            <input type="text" id="upstreamSequence" value="GCCGGCCATGGCG">
+                        </div>
+                        <div class="form-group">
+                            <label for="leftMargin">Left Margin <span class="info-icon" title="Number of random bases inserted between the upstream sequence and the template.">ℹ️</span></label>
+                            <input type="number" id="leftMargin" value="15">
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="totalLength">Total Read Length <span class="info-icon" title="The final length of the generated FASTQ reads in bases.">ℹ️</span></label>
+                            <input type="number" id="totalLength" value="500">
+                        </div>
+                        <div class="form-group">
+                            <label for="numberOfSequences">Number of Reads <span class="info-icon" title="How many individual reads to simulate.">ℹ️</span></label>
+                            <input type="number" id="numberOfSequences" value="50">
+                        </div>
+                    </div>
+
+                    <h3>Quality Decay Model</h3>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="decayModel">Decay Curve Model <span class="info-icon" title="Mathematical model for quality decay over the read length.">ℹ️</span></label>
+                            <select id="decayModel" class="styled-select">
+                                <option value="gaussian" selected>Parametric Gaussian (Default)</option>
+                                <option value="exponential">Exponential Drop</option>
+                                <option value="sigmoidal">Sigmoidal Drop</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="decayRate">Decay Rate (λ / k) <span class="info-icon" title="Steepness of the dropoff. Only applies to Exponential and Sigmoidal models.">ℹ️</span></label>
+                            <input type="number" step="0.0001" id="decayRate" value="0.0008">
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="center">Peak Center (Index) <span class="info-icon" title="The base position where read quality is highest before decaying.">ℹ️</span></label>
+                            <input type="number" id="center" value="100">
+                        </div>
+                        <div class="form-group">
+                            <label for="stdDev">Standard Deviation <span class="info-icon" title="Controls how fast the quality degrades away from the peak center.">ℹ️</span></label>
+                            <input type="number" id="stdDev" value="300">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="scoreInputMode">Score Input Mode <span class="info-icon" title="Choose whether to input Min/Max as raw ASCII codes (33-126) or Absolute Phred scores (0-93).">ℹ️</span></label>
+                        <select id="scoreInputMode" class="styled-select">
+                            <option value="phred" selected>Absolute Phred Score (e.g. 7)</option>
+                            <option value="ascii">ASCII Code (e.g. 40)</option>
+                        </select>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label id="minValLabel" for="minVal">Min Score <span class="info-icon" title="The lowest allowed quality score.">ℹ️</span></label>
+                            <input type="number" id="minVal" value="7">
+                        </div>
+                        <div class="form-group">
+                            <label id="maxValLabel" for="maxVal">Max Score <span class="info-icon" title="The highest allowed quality score at the peak.">ℹ️</span></label>
+                            <input type="number" id="maxVal" value="40">
+                        </div>
+                    </div>
+
+                        <div class="form-group">
+                            <label for="noiseLevel">Noise Level <span class="info-icon" title="Standard deviation of additive Gaussian noise. Higher values create realistic per-cycle quality fluctuations.">ℹ️</span></label>
+                            <input type="number" step="0.05" id="noiseLevel" value="0.5">
+                        </div>
+                    
+                    <div class="form-group checkbox-group">
+                        <input type="checkbox" id="binnedQuality">
+                        <label for="binnedQuality">NovaSeq Quality Binning <span class="info-icon" title="Snaps quality scores to discrete platform bins (2, 12, 23, 37) like modern Illumina sequencers.">ℹ️</span></label>
+                    </div>
+
+                    <div class="form-group checkbox-group">
+                        <input type="checkbox" id="homopolymerPenalty">
+                        <label for="homopolymerPenalty">Homopolymer Penalty <span class="info-icon" title="Penalizes Phred scores inside runs of >4 identical bases to simulate sequencer alignment struggles.">ℹ️</span></label>
+                    </div>
+                    
+                    <div class="form-group checkbox-group">
+                        <input type="checkbox" id="pairedEnd">
+                        <label for="pairedEnd">Generate Paired-End (R1 + R2)</label>
+                    </div>
+                </form>
+            </section>
+
+            <!-- Right Panel: Visualization and Output -->
+            <section class="panel preview-panel">
+                <div class="chart-container glass">
+                    <div class="chart-header">
+                        <h2>Phred Quality Curve Preview</h2>
+                        <div class="chart-actions">
+                            <button id="toggleScaleBtn" class="btn-secondary">Show ASCII Scale</button>
+                            <button id="previewBtn" class="btn-secondary">Update Plot</button>
+                        </div>
+                    </div>
+                    <canvas id="phredChart"></canvas>
+                </div>
+
+                <div class="action-container glass">
+                    <h2>Generate Dataset</h2>
+                    <p>Run the simulation entirely in your browser and download the resulting FASTQ files locally.</p>
+                    <button id="generateBtn" class="btn-primary">Generate & Download FASTQ</button>
+                    <div id="statusMessage" class="status-message"></div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Application Logic -->
+    <script src="core.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>

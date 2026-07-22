@@ -30,7 +30,7 @@ class TestPhredBoundaries:
     def test_scores_within_bounds(self, min_val: int, max_val: int) -> None:
         """Every decoded Phred score must lie in [min_val, max_val]."""
         quality = generate_phred_scores(
-            num_points=500,
+            sequence="A" * 500,
             center=150,
             min_val=min_val,
             max_val=max_val,
@@ -46,7 +46,7 @@ class TestPhredBoundaries:
     def test_all_characters_valid_ascii(self) -> None:
         """Every character must map to an ASCII code in [33, 126]."""
         quality = generate_phred_scores(
-            num_points=1000,
+            sequence="A" * 1000,
             center=250,
             min_val=40,
             max_val=73,
@@ -61,7 +61,7 @@ class TestPhredBoundaries:
         """The returned string length must equal num_points."""
         for n in [1, 10, 100, 500, 1000]:
             quality = generate_phred_scores(
-                num_points=n,
+                sequence="A" * n,
                 center=n // 2,
                 min_val=40,
                 max_val=73,
@@ -73,7 +73,7 @@ class TestPhredBoundaries:
     def test_min_equals_max_produces_uniform(self) -> None:
         """When min_val == max_val, all scores should be identical."""
         quality = generate_phred_scores(
-            num_points=200,
+            sequence="A" * 200,
             center=100,
             min_val=50,
             max_val=50,
@@ -86,7 +86,7 @@ class TestPhredBoundaries:
     def test_noise_level_zero(self) -> None:
         """With zero noise, scores should still respect boundaries."""
         quality = generate_phred_scores(
-            num_points=300,
+            sequence="A" * 300,
             center=150,
             min_val=40,
             max_val=73,

@@ -68,13 +68,13 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument(
         "--number_of_sequences",
         type=int,
-        default=10,
+        default=50,
         help="Number of reads to generate.",
     )
     parser.add_argument(
         "--center",
         type=int,
-        default=150,
+        default=100,
         help="Center index of the Gaussian quality peak.",
     )
     parser.add_argument(
@@ -92,14 +92,47 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument(
         "--std_dev",
         type=int,
-        default=75,
+        default=300,
         help="Standard deviation of the Gaussian quality curve.",
     )
     parser.add_argument(
         "--noise_level",
         type=float,
-        default=0.1,
+        default=0.5,
         help="Standard deviation of additive Gaussian noise on quality scores.",
+    )
+    parser.add_argument(
+        "--score_type",
+        type=str,
+        choices=["ascii", "phred"],
+        default="ascii",
+        help="How to interpret min_val and max_val inputs (raw ASCII vs Absolute Phred).",
+    )
+
+    parser.add_argument(
+        "--decay_model",
+        type=str,
+        choices=["gaussian", "exponential", "sigmoidal"],
+        default="gaussian",
+        help="Mathematical model for quality decay over the read length.",
+    )
+    parser.add_argument(
+        "--decay_rate",
+        type=float,
+        default=0.0008,
+        help="Steepness of the dropoff. Only applies to Exponential and Sigmoidal models.",
+    )
+    parser.add_argument(
+        "--binned_quality",
+        action="store_true",
+        default=False,
+        help="Snap quality scores to discrete platform bins (2, 12, 23, 37) like modern Illumina sequencers.",
+    )
+    parser.add_argument(
+        "--homopolymer_penalty",
+        action="store_true",
+        default=False,
+        help="Penalize Phred scores inside runs of >4 identical bases to simulate sequencer alignment struggles.",
     )
 
     # --- Output mode ---
@@ -159,6 +192,11 @@ def _resolve_parameters(parsed_args: argparse.Namespace) -> dict:
         "max_val": parsed_args.max_val,
         "std_dev": parsed_args.std_dev,
         "noise_level": parsed_args.noise_level,
+        "score_type": parsed_args.score_type,
+        "decay_model": parsed_args.decay_model,
+        "decay_rate": parsed_args.decay_rate,
+        "binned_quality": parsed_args.binned_quality,
+        "homopolymer_penalty": parsed_args.homopolymer_penalty,
     }
 
     if parsed_args.parameters_file is not None:

@@ -7,15 +7,19 @@ import numpy as np
 
 
 def generate_phred_scores(
-    num_points: int,
+    sequence: str,
     center: int,
     min_val: int,
     max_val: int,
     std_dev: int,
-    noise_level: float = 0.1,
+    noise_level: float = 0.5,
     ascii_base: int = 33,
+    decay_model: str = "gaussian",
+    decay_rate: float = 0.0008,
+    binned_quality: bool = False,
+    homopolymer_penalty: bool = False,
 ) -> str:
-    """Generate simulated Phred quality scores with a Gaussian decay profile.
+    """Generate simulated Phred quality scores with a parametric decay profile.
 
     Produces a string of ASCII-encoded Phred quality characters. The ASCII
     codes follow a Gaussian curve centered at *center* with
@@ -24,25 +28,64 @@ def generate_phred_scores(
     ``[min_val, max_val]``.
 
     Args:
-        num_points: Number of quality scores to generate (= read length).
-        center: Index position of the Gaussian peak.
+        sequence: Input DNA string; its length determines the number of
+            quality scores generated and provides context for homopolymer
+            detection.
+        center: Zero-indexed position of the Gaussian peak or sigmoidal
+            inflection point.
         min_val: Minimum allowed ASCII code (e.g., 40 for Phred 7).
         max_val: Maximum allowed ASCII code (e.g., 73 for Phred 40).
-        std_dev: Standard deviation of the Gaussian curve.
-        noise_level: Standard deviation of additive noise.
+        std_dev: Standard deviation of the Gaussian decay curve.
+        noise_level: Standard deviation of additive Gaussian quality noise.
         ascii_base: ASCII offset for Phred encoding (default 33 = Sanger).
+        decay_model: Quality decay model — ``"gaussian"`` (default),
+            ``"exponential"`` (3' dropoff with sub-exponential plateau),
+            or ``"sigmoidal"``.
+        decay_rate: Steepness parameter (λ for exponential, k for
+            sigmoidal); ignored by the Gaussian model.
+        binned_quality: If ``True``, snap scores to 4-state Illumina
+            NovaSeq bins {Q2, Q12, Q23, Q37}.
+        homopolymer_penalty: If ``True``, apply a −10 penalty to positions
+            within homopolymer runs longer than four consecutive bases.
 
     Returns:
         A string of ASCII characters encoding the quality scores.
     """
+    num_points = len(sequence)
     x = np.linspace(0, num_points - 1, num_points)
-    gaussian_curve = np.exp(-((x - center) ** 2) / (2 * std_dev**2))
 
     noise = np.random.normal(0, noise_level, num_points)
-    smooth_noisy_curve = gaussian_curve + noise
-    smooth_noisy_curve = smooth_noisy_curve * (max_val - min_val) + min_val
+    
+    if decay_model == "exponential":
+        curve = (max_val - min_val) * np.exp(-decay_rate * (x**1.25)) + min_val
+        smooth_noisy_curve = curve + noise
+    elif decay_model == "sigmoidal":
+        curve = min_val + (max_val - min_val) / (1 + np.exp(decay_rate * (x - center)))
+        smooth_noisy_curve = curve + noise
+    else:
+        # gaussian
+        gaussian_curve = np.exp(-((x - center) ** 2) / (2 * std_dev**2))
+        curve = gaussian_curve * (max_val - min_val) + min_val
+        smooth_noisy_curve = curve + noise
+
+    if homopolymer_penalty:
+        run_len = 1
+        for i in range(1, num_points):
+            if sequence[i] == sequence[i-1]:
+                run_len += 1
+                if run_len > 4:
+                    smooth_noisy_curve[i] -= 10
+            else:
+                run_len = 1
+
     smooth_noisy_curve = np.clip(smooth_noisy_curve, min_val, max_val)
     smooth_noisy_curve = np.round(smooth_noisy_curve).astype(int)
+
+    if binned_quality:
+        bins = np.array([2, 12, 23, 37]) + ascii_base
+        diff = np.abs(smooth_noisy_curve[:, None] - bins)
+        closest_bin_indices = np.argmin(diff, axis=1)
+        smooth_noisy_curve = bins[closest_bin_indices]
 
     phred_scores = "".join(chr(value) for value in smooth_noisy_curve)
     return phred_scores
@@ -101,12 +144,17 @@ def assemble_sequences(
     left_margin: int = 110,
     upstream_sequence: str = "GCCGGCCATGGCG",
     total_length: int = 500,
-    number_of_sequences: int = 10,
-    center: int = 150,
+    number_of_sequences: int = 50,
+    center: int = 100,
     min_val: int = 40,
     max_val: int = 73,
-    std_dev: int = 75,
-    noise_level: float = 0.1,
+    std_dev: int = 300,
+    noise_level: float = 0.5,
+    score_type: str = "ascii",
+    decay_model: str = "gaussian",
+    decay_rate: float = 0.0008,
+    binned_quality: bool = False,
+    homopolymer_penalty: bool = False,
 ) -> list[list[str]]:
     """Assemble single-end synthetic FASTQ records.
 
@@ -140,6 +188,10 @@ def assemble_sequences(
         total_length - left_margin - len(upstream_sequence) - len(template_sequence)
     )
 
+    if score_type.lower() == "phred":
+        min_val += 33
+        max_val += 33
+
     assembled_sequences: list[list[str]] = []
     for _ in range(number_of_sequences):
         random_left = "".join(random.choices(bases, k=left_margin))
@@ -148,9 +200,17 @@ def assemble_sequences(
         sequence = upstream_sequence + random_left + noisy_template + random_right
 
         header = generate_read_header()
-        seq_len = len(sequence)
         phred_string = generate_phred_scores(
-            seq_len, center, min_val, max_val, std_dev, noise_level=noise_level
+            sequence, 
+            center, 
+            min_val, 
+            max_val, 
+            std_dev, 
+            noise_level=noise_level,
+            decay_model=decay_model,
+            decay_rate=decay_rate,
+            binned_quality=binned_quality,
+            homopolymer_penalty=homopolymer_penalty
         )
         assembled_sequences.append([header, sequence, "+", phred_string])
 
@@ -162,12 +222,17 @@ def assemble_paired_sequences(
     left_margin: int = 110,
     upstream_sequence: str = "GCCGGCCATGGCG",
     total_length: int = 500,
-    number_of_sequences: int = 10,
-    center: int = 150,
+    number_of_sequences: int = 50,
+    center: int = 100,
     min_val: int = 40,
     max_val: int = 73,
-    std_dev: int = 75,
-    noise_level: float = 0.1,
+    std_dev: int = 300,
+    noise_level: float = 0.5,
+    score_type: str = "ascii",
+    decay_model: str = "gaussian",
+    decay_rate: float = 0.0008,
+    binned_quality: bool = False,
+    homopolymer_penalty: bool = False,
 ) -> tuple[list[list[str]], list[list[str]]]:
     """Assemble paired-end synthetic FASTQ records.
 
@@ -200,6 +265,10 @@ def assemble_paired_sequences(
         total_length - left_margin - len(upstream_sequence) - len(template_sequence)
     )
 
+    if score_type.lower() == "phred":
+        min_val += 33
+        max_val += 33
+
     r1_records: list[list[str]] = []
     r2_records: list[list[str]] = []
 
@@ -210,18 +279,35 @@ def assemble_paired_sequences(
         sequence = upstream_sequence + random_left + noisy_template + random_right
 
         header = generate_read_header()
-        seq_len = len(sequence)
 
         # R1 — forward
         phred_r1 = generate_phred_scores(
-            seq_len, center, min_val, max_val, std_dev, noise_level=noise_level
+            sequence, 
+            center, 
+            min_val, 
+            max_val, 
+            std_dev, 
+            noise_level=noise_level,
+            decay_model=decay_model,
+            decay_rate=decay_rate,
+            binned_quality=binned_quality,
+            homopolymer_penalty=homopolymer_penalty
         )
         r1_records.append([header + "/1", sequence, "+", phred_r1])
 
         # R2 — reverse complement
         r2_sequence = reverse_complement(sequence)
         phred_r2 = generate_phred_scores(
-            seq_len, center, min_val, max_val, std_dev, noise_level=noise_level
+            r2_sequence, 
+            center, 
+            min_val, 
+            max_val, 
+            std_dev, 
+            noise_level=noise_level,
+            decay_model=decay_model,
+            decay_rate=decay_rate,
+            binned_quality=binned_quality,
+            homopolymer_penalty=homopolymer_penalty
         )
         r2_records.append([header + "/2", r2_sequence, "+", phred_r2])
 
