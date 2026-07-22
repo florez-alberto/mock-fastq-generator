@@ -56,8 +56,10 @@ def build_parser() -> argparse.ArgumentParser:
         "--left_margin",
         type=int,
         default=15,
-        help="Number of random bases inserted between the upstream sequence "
-        "and the template.",
+        help=(
+            "Number of random bases inserted between the upstream sequence "
+            "and the template."
+        ),
     )
     parser.add_argument(
         "--total_length",
@@ -153,8 +155,10 @@ def build_parser() -> argparse.ArgumentParser:
         "--output_file",
         type=str,
         default=None,
-        help="Output file path.  For paired-end mode this is used as a "
-        "prefix (producing <prefix>_R1.fastq and <prefix>_R2.fastq).",
+        help=(
+            "Output file path.  For paired-end mode this is used as a "
+            "prefix (producing <prefix>_R1.fastq and <prefix>_R2.fastq)."
+        ),
     )
     output_group.add_argument(
         "--stdout",

@@ -71,7 +71,7 @@ def generate_phred_scores(
     if homopolymer_penalty:
         run_len = 1
         for i in range(1, num_points):
-            if sequence[i] == sequence[i-1]:
+            if sequence[i] == sequence[i - 1]:
                 run_len += 1
                 if run_len > 4:
                     smooth_noisy_curve[i] -= 10
