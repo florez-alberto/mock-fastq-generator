@@ -133,7 +133,8 @@ def build_parser() -> argparse.ArgumentParser:
         "--custom_bins",
         type=str,
         default=None,
-        help="Comma-separated list of custom Phred quality bins (e.g., '12,24,40' or '12,23,37').",
+        help="Comma-separated list of custom Phred quality bins "
+        "(e.g., '12,24,40' or '12,23,37').",
     )
     parser.add_argument(
         "--homopolymer_penalty",
