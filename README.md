@@ -15,7 +15,7 @@
   - **Gaussian**: Bounded bell-curve quality peak centered at a designated position.
   - **Exponential**: Simulates 3' end quality degradation with a sub-exponential initial plateau.
   - **Sigmoidal**: Sharp quality score drop centered at a specific nucleotide coordinate.
-- **Illumina 4-State Quality Binning (`--binned_quality`)**: Snaps Phred scores to discrete bins (`Q2, Q12, Q23, Q37`) emulating modern Illumina NovaSeq platforms.
+- **Illumina 3-State Quality Binning (`--binned_quality`)**: Snaps Phred scores to discrete 3-state bins (`Q12, Q23, Q37`) emulating modern Illumina NovaSeq platforms.
 - **Homopolymer Quality Penalties (`--homopolymer_penalty`)**: Applies context-dependent $-10$ Phred score penalties inside runs of $>4$ identical consecutive nucleotides.
 - **Targeted Construct Assembly**: Combines custom FASTA templates with adapter/flanking upstream sequences and randomized nucleotide margins.
 - **Paired-End Read Simulation (`--paired-end`)**: Generates matching R1 (forward) and R2 (reverse complement) paired FASTQ files with matching headers (`/1` and `/2`).
@@ -28,7 +28,7 @@
 
 ![Quality Profiles](./img/smooth_curve_example.png)
 
-*Figure 1: Comparison of synthetic Phred quality score profiles generated across a 500-base construct. (A) Parametric Gaussian decay. (B) Exponential 3' quality dropoff. (C) Sigmoidal drop combined with 4-state NovaSeq binning and homopolymer penalties.*
+*Figure 1: Comparison of synthetic Phred quality score profiles generated across a 500-base construct. (A) Parametric Gaussian decay. (B) Exponential 3' quality dropoff. (C) Sigmoidal drop combined with 3-state NovaSeq binning and homopolymer penalties.*
 
 ---
 
@@ -175,7 +175,7 @@ write_fastq("output.fastq.gz", records, compress=True)
 | `--max_val` | `73` | Maximum quality score ceiling. |
 | `--score_type` | `"ascii"` | Input format for `min_val`/`max_val` (`"ascii"` offset 33 or `"phred"` absolute). |
 | `--noise_level` | `0.5` | Standard deviation of additive Gaussian noise on Phred scores. |
-| `--binned_quality` | `False` | Snap quality scores to Illumina 4-state bins (`Q2, Q12, Q23, Q37`). |
+| `--binned_quality` | `False` | Snap quality scores to Illumina 3-state bins (`Q12, Q23, Q37`). |
 | `--homopolymer_penalty` | `False` | Subtract $10$ Phred points within homopolymer runs $>4$ bases. |
 
 ---

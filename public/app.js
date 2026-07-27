@@ -161,6 +161,7 @@ document.addEventListener("DOMContentLoaded", () => {
             decayModel: document.getElementById("decayModel").value,
             decayRate: parseFloat(document.getElementById("decayRate").value),
             binnedQuality: document.getElementById("binnedQuality").checked,
+            customBins: document.getElementById("customBins").value,
             homopolymerPenalty: document.getElementById("homopolymerPenalty").checked
         };
     }

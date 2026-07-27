@@ -104,8 +104,8 @@ def main():
     ax_c = axes[2]
     ax_c.plot(x_coords, scores_sig, color='#2ca02c', linewidth=1.8, drawstyle='steps-mid', label='Binned + Homopolymer Penalty')
 
-    # Discrete NovaSeq bins
-    bins = [2, 12, 23, 37]
+    # Discrete NovaSeq X 3-state bins
+    bins = [12, 24, 40]
     for b in bins:
         ax_c.axhline(y=b, color='gray', linestyle='-.', alpha=0.5, linewidth=1.3)
     
@@ -113,10 +113,9 @@ def main():
     ax_c.set_xlabel('Base Position (Index)')
     ax_c.grid(True, linestyle='--', alpha=0.35)
     
-    ax_c.text(495, 37.5, 'Q37', color='#222222', fontsize=12, ha='right', va='bottom', fontweight='bold')
-    ax_c.text(495, 23.5, 'Q23', color='#222222', fontsize=12, ha='right', va='bottom', fontweight='bold')
+    ax_c.text(495, 40.5, 'Q40', color='#222222', fontsize=12, ha='right', va='bottom', fontweight='bold')
+    ax_c.text(495, 24.5, 'Q24', color='#222222', fontsize=12, ha='right', va='bottom', fontweight='bold')
     ax_c.text(495, 12.5, 'Q12', color='#222222', fontsize=12, ha='right', va='bottom', fontweight='bold')
-    ax_c.text(495, 2.5, 'Q2', color='#222222', fontsize=12, ha='right', va='bottom', fontweight='bold')
     ax_c.legend(loc='lower left', framealpha=0.9)
 
     plt.tight_layout()

@@ -6,6 +6,14 @@ import string
 import numpy as np
 
 
+def _parse_bins(custom_bins: list[int] | str | None) -> list[int]:
+    if custom_bins is None:
+        return [12, 24, 40]
+    if isinstance(custom_bins, str):
+        return [int(b.strip()) for b in custom_bins.split(",") if b.strip()]
+    return [int(b) for b in custom_bins]
+
+
 def generate_phred_scores(
     sequence: str,
     center: int,
@@ -17,6 +25,7 @@ def generate_phred_scores(
     decay_model: str = "gaussian",
     decay_rate: float = 0.0008,
     binned_quality: bool = False,
+    custom_bins: list[int] | str | None = None,
     homopolymer_penalty: bool = False,
 ) -> str:
     """Generate simulated Phred quality scores with a parametric decay profile.
@@ -43,8 +52,10 @@ def generate_phred_scores(
             or ``"sigmoidal"``.
         decay_rate: Steepness parameter (λ for exponential, k for
             sigmoidal); ignored by the Gaussian model.
-        binned_quality: If ``True``, snap scores to 4-state Illumina
-            NovaSeq bins {Q2, Q12, Q23, Q37}.
+        binned_quality: If ``True``, snap scores to 3-state Illumina
+            NovaSeq X bins {Q12, Q24, Q40} (or custom_bins).
+        custom_bins: List or comma-separated string of custom integer Phred
+            bins (e.g., ``[12, 24, 40]`` or ``"12,23,37"``).
         homopolymer_penalty: If ``True``, apply a −10 penalty to positions
             within homopolymer runs longer than four consecutive bases.
 
@@ -81,8 +92,9 @@ def generate_phred_scores(
     smooth_noisy_curve = np.clip(smooth_noisy_curve, min_val, max_val)
     smooth_noisy_curve = np.round(smooth_noisy_curve).astype(int)
 
-    if binned_quality:
-        bins = np.array([2, 12, 23, 37]) + ascii_base
+    if binned_quality or custom_bins is not None:
+        bin_values = _parse_bins(custom_bins)
+        bins = np.array(bin_values) + ascii_base
         diff = np.abs(smooth_noisy_curve[:, None] - bins)
         closest_bin_indices = np.argmin(diff, axis=1)
         smooth_noisy_curve = bins[closest_bin_indices]
@@ -154,6 +166,7 @@ def assemble_sequences(
     decay_model: str = "gaussian",
     decay_rate: float = 0.0008,
     binned_quality: bool = False,
+    custom_bins: list[int] | str | None = None,
     homopolymer_penalty: bool = False,
 ) -> list[list[str]]:
     """Assemble single-end synthetic FASTQ records.
@@ -179,6 +192,12 @@ def assemble_sequences(
         std_dev: Std-dev of the Gaussian quality curve.
         noise_level: Per-base substitution probability **and** quality
             noise std-dev.
+        score_type: Quality score input type ("ascii" or "phred").
+        decay_model: Model name ("gaussian", "exponential", "sigmoidal").
+        decay_rate: Decay rate / steepness parameter.
+        binned_quality: Snap quality scores to discrete bins.
+        custom_bins: List or string of custom integer Phred bins.
+        homopolymer_penalty: Apply homopolymer penalty inside runs >4.
 
     Returns:
         A list of FASTQ records, each a 4-element string list.
@@ -210,6 +229,7 @@ def assemble_sequences(
             decay_model=decay_model,
             decay_rate=decay_rate,
             binned_quality=binned_quality,
+            custom_bins=custom_bins,
             homopolymer_penalty=homopolymer_penalty,
         )
         assembled_sequences.append([header, sequence, "+", phred_string])
@@ -232,6 +252,7 @@ def assemble_paired_sequences(
     decay_model: str = "gaussian",
     decay_rate: float = 0.0008,
     binned_quality: bool = False,
+    custom_bins: list[int] | str | None = None,
     homopolymer_penalty: bool = False,
 ) -> tuple[list[list[str]], list[list[str]]]:
     """Assemble paired-end synthetic FASTQ records.
@@ -291,6 +312,7 @@ def assemble_paired_sequences(
             decay_model=decay_model,
             decay_rate=decay_rate,
             binned_quality=binned_quality,
+            custom_bins=custom_bins,
             homopolymer_penalty=homopolymer_penalty,
         )
         r1_records.append([header + "/1", sequence, "+", phred_r1])
@@ -307,6 +329,7 @@ def assemble_paired_sequences(
             decay_model=decay_model,
             decay_rate=decay_rate,
             binned_quality=binned_quality,
+            custom_bins=custom_bins,
             homopolymer_penalty=homopolymer_penalty,
         )
         r2_records.append([header + "/2", r2_sequence, "+", phred_r2])

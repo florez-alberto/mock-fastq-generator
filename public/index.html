@@ -106,7 +106,12 @@
                     
                     <div class="form-group checkbox-group">
                         <input type="checkbox" id="binnedQuality">
-                        <label for="binnedQuality">NovaSeq Quality Binning <span class="info-icon" title="Snaps quality scores to discrete platform bins (2, 12, 23, 37) like modern Illumina sequencers.">ℹ️</span></label>
+                        <label for="binnedQuality">NovaSeq Quality Binning <span class="info-icon" title="Snaps quality scores to discrete platform bins (default NovaSeq X: Q12, Q24, Q40).">ℹ️</span></label>
+                    </div>
+
+                    <div class="form-group" id="customBinsGroup">
+                        <label for="customBins">Custom Q-Score Bins <span class="info-icon" title="Comma-separated Phred quality bins (e.g., 12, 24, 40 for NovaSeq X or 12, 23, 37 for NovaSeq 6000).">ℹ️</span></label>
+                        <input type="text" id="customBins" value="12, 24, 40" placeholder="12, 24, 40">
                     </div>
 
                     <div class="form-group checkbox-group">

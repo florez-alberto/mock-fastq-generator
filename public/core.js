@@ -46,7 +46,7 @@ function addNoiseToSequence(sequence, noiseLevel) {
 }
 
 // Generate Phred scores using the parametric models
-function generatePhredScores(sequence, center, minVal, maxVal, stdDev, noiseLevel, decayModel = 'gaussian', decayRate = 0.0008, binnedQuality = false, homopolymerPenalty = false) {
+function generatePhredScores(sequence, center, minVal, maxVal, stdDev, noiseLevel, decayModel = 'gaussian', decayRate = 0.0008, binnedQuality = false, customBins = null, homopolymerPenalty = false) {
     let scores = [];
     let asciiString = '';
     const numPoints = sequence.length;
@@ -93,10 +93,17 @@ function generatePhredScores(sequence, center, minVal, maxVal, stdDev, noiseLeve
         score = Math.max(minVal, Math.min(maxVal, score));
         score = Math.round(score);
         
-        if (binnedQuality) {
-            // NovaSeq bins in Absolute Phred: 2, 12, 23, 37
-            // minVal/maxVal are passed in as ASCII, so we add 33 to bins
-            const bins = [2 + ASCII_BASE, 12 + ASCII_BASE, 23 + ASCII_BASE, 37 + ASCII_BASE];
+        if (binnedQuality || (customBins !== null && customBins !== undefined && customBins !== '')) {
+            // Parse bin values (defaults to NovaSeq X standard: 12, 24, 40)
+            let binList = [12, 24, 40];
+            if (typeof customBins === 'string') {
+                const parsed = customBins.split(',').map(b => parseInt(b.trim(), 10)).filter(b => !isNaN(b));
+                if (parsed.length > 0) binList = parsed;
+            } else if (Array.isArray(customBins) && customBins.length > 0) {
+                binList = customBins.map(b => parseInt(b, 10));
+            }
+            
+            const bins = binList.map(b => b + ASCII_BASE);
             let closest = bins[0];
             let minDiff = Math.abs(score - bins[0]);
             for (let b = 1; b < bins.length; b++) {
@@ -133,6 +140,7 @@ function assembleSequences(params) {
         decayModel = 'gaussian',
         decayRate = 0.0008,
         binnedQuality = false,
+        customBins = null,
         homopolymerPenalty = false
     } = params;
 
@@ -173,7 +181,7 @@ function assembleSequences(params) {
         const header = generateReadHeader();
         const phredData = generatePhredScores(
             finalSeq, center, minVal, maxVal, stdDev, noiseLevel,
-            decayModel, decayRate, binnedQuality, homopolymerPenalty
+            decayModel, decayRate, binnedQuality, customBins, homopolymerPenalty
         );
         
         if (i === 0) {
@@ -191,7 +199,7 @@ function assembleSequences(params) {
             const r2Seq = reverseComplement(finalSeq);
             const r2PhredData = generatePhredScores(
                 r2Seq, center, minVal, maxVal, stdDev, noiseLevel,
-                decayModel, decayRate, binnedQuality, homopolymerPenalty
+                decayModel, decayRate, binnedQuality, customBins, homopolymerPenalty
             );
             r2Records.push([
                 `${header}/2`,

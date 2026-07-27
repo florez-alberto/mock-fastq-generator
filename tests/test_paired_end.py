@@ -31,6 +31,18 @@ class TestPairedEnd:
             # Base headers must match
             assert h1[:-2] == h2[:-2], f"Headers mismatch: {h1} vs {h2}"
 
+    def test_paired_end_phred_score_type(self) -> None:
+        r1_records, r2_records = assemble_paired_sequences(
+            template_sequence=TEMPLATE,
+            total_length=150,
+            number_of_sequences=2,
+            min_val=7,
+            max_val=40,
+            score_type="phred",
+        )
+        assert len(r1_records) == 2
+        assert len(r2_records) == 2
+
     def test_r2_is_reverse_complement_of_r1(self) -> None:
         """R2 sequence must be the exact reverse complement of R1 sequence."""
         # We test with zero noise to ensure exact match.

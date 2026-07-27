@@ -17,8 +17,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         prog="mock-fastq-generator",
         description=(
-            "A lightweight Python utility for targeted synthetic FASTQ "
-            "generation with parametric quality decay modeling."
+            "A lightweight Python utility for targeted synthetic FASTQ generation."
         ),
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     )
@@ -128,8 +127,13 @@ def build_parser() -> argparse.ArgumentParser:
         "--binned_quality",
         action="store_true",
         default=False,
-        help="Snap quality scores to discrete platform bins (2, 12, 23, 37) "
-        "like modern Illumina sequencers.",
+        help="Snap quality scores to 3-state Illumina NovaSeq X bins (Q12, Q24, Q40).",
+    )
+    parser.add_argument(
+        "--custom_bins",
+        type=str,
+        default=None,
+        help="Comma-separated list of custom Phred quality bins (e.g., '12,24,40' or '12,23,37').",
     )
     parser.add_argument(
         "--homopolymer_penalty",
@@ -200,6 +204,7 @@ def _resolve_parameters(parsed_args: argparse.Namespace) -> dict:
         "decay_model": parsed_args.decay_model,
         "decay_rate": parsed_args.decay_rate,
         "binned_quality": parsed_args.binned_quality,
+        "custom_bins": parsed_args.custom_bins,
         "homopolymer_penalty": parsed_args.homopolymer_penalty,
     }
 
@@ -230,12 +235,15 @@ def main(args: argparse.Namespace | None = None) -> None:
     if parsed_args.template_sequence:
         template_sequence = read_fasta(parsed_args.template_sequence)
     else:
-        # Fall back to bundled example shipped with the repository.
-        default_fasta = os.path.join(
+        # Fall back to bundled example shipped with the package or repository.
+        pkg_fasta = os.path.join(os.path.dirname(__file__), "template_example.fasta")
+        repo_fasta = os.path.join(
             os.path.dirname(__file__), "..", "..", "template_example.fasta"
         )
-        if os.path.isfile(default_fasta):
-            template_sequence = read_fasta(default_fasta)
+        if os.path.isfile(pkg_fasta):
+            template_sequence = read_fasta(pkg_fasta)
+        elif os.path.isfile(repo_fasta):
+            template_sequence = read_fasta(repo_fasta)
         else:
             template_sequence = read_fasta("template_example.fasta")
 
