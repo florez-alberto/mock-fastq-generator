@@ -1,6 +1,6 @@
 # mock-fastq-generator
 
-<a href="https://zenodo.org/doi/10.5281/zenodo.10899656"><img src="https://zenodo.org/badge/756591816.svg" alt="DOI"></a>
+<a href="https://zenodo.org/doi/10.5281/zenodo.21628540"><img src="https://zenodo.org/badge/756591816.svg" alt="DOI"></a>
 ![Tests](https://github.com/florez-alberto/mock-fastq-generator/actions/workflows/test.yml/badge.svg)
 ![License](https://img.shields.io/badge/license-MIT-blue.svg)
 ![Python](https://img.shields.io/badge/python-3.8%2B-blue.svg)
